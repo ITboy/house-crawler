@@ -38,15 +38,35 @@ const getHouseType = function(houseType) {
 
 const run = function() {
   const indexUrl = genSearchUrl(_58config);
-  console.log(url.parse('http://sh.58.com/beicai/zufang/0/j2/pn2/?minprice=3000_4000&PGTID=0d300008-0061-45ac-37e8-2fd64e60e3ec&ClickID=2').pathname);
 }
 
 const getPageNo = function(listUrl) {
   const urlObj = url.parse(listUrl);
   const pathname = urlObj.pathname;
-  console.log(pathname);
+  const matchResult = pathname.match(/.+pn([0-9]+)\/$/);
+  return (matchResult && matchResult[1]) || 1;
 }
 
+const nextPageUrl = function(listUrl) {
+  const urlObj = url.parse(listUrl);
+  const pathname = urlObj.pathname;
+  const matchResult = pathname.match(/.+pn([0-9]+)\/$/);
+  if (!matchResult) {
+    pathname += 'pn2';
+  } else {
+    const pageNo = matchResult[1] + 1;
+    pathname.replace(/.+\/pn[0-9]+\//, 'pn' + pageNo);
+  }
+  return url.format(urlObj);
+}
+
+const crawl = function(listUrl) {
+  return crawlListPage(listUrl).catch((error) => {
+    console.log('crawlListPage error: ' + error);
+  }).then(() => {
+    return crawl(nextPageUrl(listUrl));
+  });
+}
 const crawlListPage = function(listUrl) {
 
 }
